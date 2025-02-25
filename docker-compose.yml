@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  computer-helper:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: computer-helper:latest
+    container_name: computer-helper
+    env_file: .env
+    depends_on:
+      - redis
+      - postgres
+
+  redis:
+    image: redis:7.4.0-alpine
+    container_name: redis
+    hostname: redis
+    ports:
+      - '6379:6379'
+
+  postgres:
+    image: postgres:17.2
+    container_name: postgres
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: computer_helper
