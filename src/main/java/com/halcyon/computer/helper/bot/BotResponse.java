@@ -18,8 +18,32 @@ public class BotResponse {
             👤 Ваш профиль:
             
             <u>ФИО</u>: %s
-            <u>телефон</u>: %s
-            <u>email</u>: %s
-            <u>адрес для выезда</u>: %s
+            <u>Телефон</u>: %s
+            <u>Email</u>: %s
+            <u>Адрес для выезда</u>: %s
             """;
+
+    public static final String SPECIALIST_REQUEST_MESSAGE = """
+            Ваша заявка отправлена на обработку:
+            
+            <u>ФИО</u>: %s
+            <u>Телефон</u>: %s
+            <u>Email</u>: %s
+            """;
+
+    public static final String WAITING_REQUEST_MESSAGE = "✅ *Ваша заявка передана администратору, ожидайте подтверждения*";
+
+    public static final String ADMIN_START_MESSAGE = "Здравствуйте! Вы являетесь администратором. *Выберите ниже нужную Вам функцию.*";
+    public static final String SPECIALISTS_REQUESTS_MESSAGE = "*Активные заявки на специалиста*";
+
+    public static final String ADMIN_SPECIALIST_REQUEST_MESSAGE = """
+            Заявка на специалиста:
+            
+            <u>ФИО</u>: %s
+            <u>Телефон</u>: %s
+            <u>Email</u>: %s
+            """;
+
+    public static final String ACCEPTED_REQUEST_MESSAGE = "✅ <b>Ваша заявка была одобрена администратором!</b>";
+    public static final String DECLINED_REQUEST_MESSAGE = "❌ <b>Ваша заявка была отклонена администратором!</b>";
 }

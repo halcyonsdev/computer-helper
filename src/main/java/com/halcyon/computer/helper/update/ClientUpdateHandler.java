@@ -60,7 +60,7 @@ public class ClientUpdateHandler {
         var clientMenu = SendMessage.builder()
                 .chatId(chatId)
                 .text(String.format(CLIENT_START_MESSAGE, client.getFullName()))
-                .replyMarkup(getClientStartMenu())
+                .replyMarkup(getClientStartMenuKeyboard())
                 .build();
         clientMenu.enableMarkdown(true);
 
@@ -75,7 +75,7 @@ public class ClientUpdateHandler {
                 .chatId(chatId)
                 .messageId(callbackQuery.getMessage().getMessageId())
                 .text(String.format(CLIENT_START_MESSAGE, client.getFullName()))
-                .replyMarkup(getClientStartMenu())
+                .replyMarkup(getClientStartMenuKeyboard())
                 .build();
         clientMenu.enableMarkdown(true);
 
@@ -87,43 +87,41 @@ public class ClientUpdateHandler {
         cacheManager.save(String.valueOf(chatId), new ChatStatus(ChatStatusType.CLIENT_FULL_NAME));
     }
 
-    public void handleClientFullName(Message message) {
-        long chatId = message.getChatId();
-
-        botExecutionsService.sendDefaultMessage(chatId, ENTER_PHONE_MESSAGE);
-
-        cacheManager.save(String.valueOf(chatId), new ChatStatus(ChatStatusType.CLIENT_PHONE, List.of(message.getText())));
+    public void handleCreateFullName(Message message) {
+        processCreateStep(message, ENTER_PHONE_MESSAGE, ChatStatusType.CLIENT_PHONE, List.of(message.getText()));
     }
 
-    public void handleClientPhone(Message message, ChatStatus chatStatus) {
+    private void processCreateStep(Message message, String nextMessage, ChatStatusType nextStatus, List<String> data) {
         long chatId = message.getChatId();
 
+        botExecutionsService.sendDefaultMessage(chatId, nextMessage);
+        cacheManager.save(String.valueOf(chatId), new ChatStatus(nextStatus, data));
+    }
+
+    public void handleCreatePhone(Message message, ChatStatus chatStatus) {
         if (!isValidPhone(message.getText())) {
-            botExecutionsService.sendDefaultMessage(chatId, ENTER_CORRECT_PHONE_MESSAGE);
+            botExecutionsService.sendDefaultMessage(message.getChatId(), ENTER_CORRECT_PHONE_MESSAGE);
             return;
         }
 
-        botExecutionsService.sendDefaultMessage(chatId, ENTER_EMAIL_MESSAGE);
-        ChatStatus phoneStatus = new ChatStatus(ChatStatusType.CLIENT_EMAIL , List.of(chatStatus.getData().get(0), message.getText()));
-
-        cacheManager.save(String.valueOf(chatId), phoneStatus);
+        processCreateStep(message, ENTER_EMAIL_MESSAGE, ChatStatusType.CLIENT_EMAIL, List.of(chatStatus.getData().get(0), message.getText()));
     }
 
-    public void handleClientEmail(Message message, ChatStatus chatStatus) {
-        long chatId = message.getChatId();
-
+    public void handleCreateEmail(Message message, ChatStatus chatStatus) {
         if (!isValidEmail(message.getText())) {
-            botExecutionsService.sendDefaultMessage(chatId, ENTER_CORRECT_EMAIL_MESSAGE);
+            botExecutionsService.sendDefaultMessage(message.getChatId(), ENTER_CORRECT_EMAIL_MESSAGE);
             return;
         }
 
-        botExecutionsService.sendDefaultMessage(chatId, ENTER_CLIENT_ADDRESS_MESSAGE);
-        ChatStatus addressStatus = new ChatStatus(ChatStatusType.CLIENT_ADDRESS, List.of(chatStatus.getData().get(0), chatStatus.getData().get(1), message.getText()));
-
-        cacheManager.save(String.valueOf(chatId), addressStatus);
+        processCreateStep(
+                message,
+                ENTER_CLIENT_ADDRESS_MESSAGE,
+                ChatStatusType.CLIENT_ADDRESS,
+                List.of(chatStatus.getData().get(0), chatStatus.getData().get(1), message.getText())
+        );
     }
 
-    public void handleClientAddress(Message message, ChatStatus chatStatus) {
+    public void handleCreateAddress(Message message, ChatStatus chatStatus) {
         long chatId = message.getChatId();
 
         String fullName = chatStatus.getData().get(0);

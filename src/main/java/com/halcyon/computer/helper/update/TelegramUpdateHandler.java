@@ -3,23 +3,34 @@ package com.halcyon.computer.helper.update;
 import com.halcyon.computer.helper.cache.CacheManager;
 import com.halcyon.computer.helper.cache.ChatStatus;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
 public class TelegramUpdateHandler {
     private final ClientUpdateHandler clientUpdateHandler;
+    private final SpecialistUpdateHandler specialistUpdateHandler;
+    private final AdminUpdateHandler adminUpdateHandler;
     private final CacheManager cacheManager;
+
+    @Value("${bot.admin.ids}")
+    private List<Long> adminIds;
 
     public void handleMessage(Message message) {
         long chatId = message.getChatId();
 
         if (message.getText().equals("/start")) {
-            clientUpdateHandler.sendStartMessage(chatId);
+            if (adminIds.contains(message.getChatId())) {
+                adminUpdateHandler.sendStartMessage(chatId);
+            } else {
+                clientUpdateHandler.sendStartMessage(chatId);
+            }
         } else if (message.getText().equals("/profile")) {
           clientUpdateHandler.sendProfile(chatId, null);
         } else {
@@ -37,14 +48,18 @@ public class TelegramUpdateHandler {
         ChatStatus chatStatus = chatStatusOptional.get();
 
         switch (chatStatus.getType()) {
-            case CLIENT_FULL_NAME -> clientUpdateHandler.handleClientFullName(message);
-            case CLIENT_PHONE -> clientUpdateHandler.handleClientPhone(message, chatStatus);
-            case CLIENT_EMAIL -> clientUpdateHandler.handleClientEmail(message, chatStatus);
-            case CLIENT_ADDRESS -> clientUpdateHandler.handleClientAddress(message, chatStatus);
+            case CLIENT_FULL_NAME -> clientUpdateHandler.handleCreateFullName(message);
+            case CLIENT_PHONE -> clientUpdateHandler.handleCreatePhone(message, chatStatus);
+            case CLIENT_EMAIL -> clientUpdateHandler.handleCreateEmail(message, chatStatus);
+            case CLIENT_ADDRESS -> clientUpdateHandler.handleCreateAddress(message, chatStatus);
             case UPDATE_CLIENT_FULL_NAME -> clientUpdateHandler.handleUpdateClientFullName(message);
             case UPDATE_CLIENT_PHONE -> clientUpdateHandler.handleUpdateClientPhone(message);
             case UPDATE_CLIENT_EMAIL -> clientUpdateHandler.handleUpdateClientEmail(message);
             case UPDATE_CLIENT_ADDRESS -> clientUpdateHandler.handleUpdateClientAddress(message);
+
+            case SPECIALIST_FULL_NAME -> specialistUpdateHandler.handleCreateFullName(message);
+            case SPECIALIST_PHONE -> specialistUpdateHandler.handleCreatePhone(message, chatStatus);
+            case SPECIALIST_EMAIL -> specialistUpdateHandler.handleCreateEmail(message, chatStatus);
         }
     }
 
@@ -63,6 +78,22 @@ public class TelegramUpdateHandler {
             case "update_client_email" -> clientUpdateHandler.sendUpdateClientEmail(chatId);
             case "update_client_address" -> clientUpdateHandler.sendUpdateClientAddress(chatId);
             case "delete_client" -> clientUpdateHandler.delete(callbackQuery);
+
+            case "specialist_start" -> specialistUpdateHandler.editToStartMenu(callbackQuery);
+            case "specialist_register" -> specialistUpdateHandler.handleRegistration(chatId);
+
+            case "admin_start" -> adminUpdateHandler.editToStartMessage(callbackQuery);
+            case "requests" -> adminUpdateHandler.editToSpecialistsRequests(callbackQuery);
+
+            default -> {
+                if (callbackData.startsWith("request_")) {
+                    adminUpdateHandler.editToSpecialistRequestMenu(callbackQuery);
+                } else if (callbackData.startsWith("accept_")) {
+                    adminUpdateHandler.acceptSpecialistRequest(callbackQuery);
+                } else if (callbackData.startsWith("decline_")) {
+                    adminUpdateHandler.declineSpecialistRequest(callbackQuery);
+                }
+            }
         }
     }
 }

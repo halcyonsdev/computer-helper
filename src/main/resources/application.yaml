@@ -19,3 +19,5 @@ spring:
 
 bot:
   token: ${BOT_TOKEN}
+  admin:
+    ids: ${BOT_ADMIN_IDS}
