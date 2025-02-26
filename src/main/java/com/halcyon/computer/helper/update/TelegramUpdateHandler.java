@@ -71,7 +71,7 @@ public class TelegramUpdateHandler {
             case "client_register" -> clientUpdateHandler.handleRegistration(chatId);
             case "update_client" -> clientUpdateHandler.update(callbackQuery);
             case "client_profile" -> clientUpdateHandler.editProfile(callbackQuery);
-            case "client_problem" -> clientUpdateHandler.sendProblemQuestion(chatId);
+            case "client_problem" -> clientUpdateHandler.editToProblemQuestion(callbackQuery);
             case "client_start" -> clientUpdateHandler.editToClientStartMenu(callbackQuery);
             case "update_client_name" -> clientUpdateHandler.sendUpdateClientFullName(chatId);
             case "update_client_phone" -> clientUpdateHandler.sendUpdateClientPhone(chatId);
@@ -84,6 +84,11 @@ public class TelegramUpdateHandler {
 
             case "admin_start" -> adminUpdateHandler.editToStartMessage(callbackQuery);
             case "requests" -> adminUpdateHandler.editToSpecialistsRequests(callbackQuery);
+
+            case "computer" -> clientUpdateHandler.editToComputerSubcategories(callbackQuery);
+            case "pc_turn" -> clientUpdateHandler.handleComputerIssue(chatId, "Не включается");
+            case "pc_slow" -> clientUpdateHandler.handleComputerIssue(chatId, "Медленно работает");
+            case "pc_hangs" -> clientUpdateHandler.handleComputerIssue(chatId, "Зависает");
 
             default -> {
                 if (callbackData.startsWith("request_")) {

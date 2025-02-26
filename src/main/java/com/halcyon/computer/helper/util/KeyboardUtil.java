@@ -145,4 +145,46 @@ public class KeyboardUtil {
                         getAdminMenuButtonRow()
                 )).build();
     }
+
+    public static InlineKeyboardMarkup getProblemCategoriesKeyboard() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDCBB Компьютер и ноутбук")
+                                .callbackData("computer")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDCBE Программное обеспечение")
+                                .callbackData("software")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("⌨️ Переферийные устройства")
+                                .callbackData("peripheral")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDE3️ Необходима консультация")
+                                .callbackData("consultation")
+                                .build()),
+                        getClientStartMenuButtonRow()
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getComputerSubcategoriesKeyboard() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDEAB Не включается")
+                                .callbackData("pc_turn")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDCC9 Медленно работает")
+                                .callbackData("pc_slow")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDD04 Зависает")
+                                .callbackData("pc_hangs")
+                                .build()),
+                        getClientStartMenuButtonRow()
+                )).build();
+    }
 }

@@ -12,7 +12,8 @@ public class BotResponse {
     public static final String ENTER_CORRECT_PHONE_MESSAGE = "Введите корректный <u>номер телефона</u>:";
     public static final String ENTER_CORRECT_EMAIL_MESSAGE = "Введите корректный <u>email</u>:";
 
-    public static final String PROBLEM_MESSAGE = "Здравствуйте! Какая у Вас <u>проблема?</u>";
+    public static final String PROBLEM_MESSAGE = "Какая у Вас <u>проблема?</u>";
+    public static final String SUBCATEGORY_MESSAGE = "Выберите вашу <u>проблему</u>:";
 
     public static final String CLIENT_PROFILE_MESSAGE = """
             👤 Ваш профиль:
@@ -46,4 +47,14 @@ public class BotResponse {
 
     public static final String ACCEPTED_REQUEST_MESSAGE = "✅ <b>Ваша заявка была одобрена администратором!</b>";
     public static final String DECLINED_REQUEST_MESSAGE = "❌ <b>Ваша заявка была отклонена администратором!</b>";
+
+    public static final String DESCRIBE_PROBLEM = "Максимально подробно опишите Вашу проблему.";
+
+    public static final String PROBLEM_INFO = """
+            Информация о проблеме:
+            
+            <u>Категория</u>: %s
+            <u>Подкатегория</u>: %s
+            <u>Описание</u>: %s
+            """;
 }

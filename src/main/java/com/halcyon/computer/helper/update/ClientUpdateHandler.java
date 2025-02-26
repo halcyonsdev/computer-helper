@@ -144,7 +144,38 @@ public class ClientUpdateHandler {
     }
 
     public void sendProblemQuestion(long chatId) {
-        botExecutionsService.sendDefaultMessage(chatId, PROBLEM_MESSAGE);
+        var problemCreateMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(PROBLEM_MESSAGE)
+                .replyMarkup(getProblemCategoriesKeyboard())
+                .build();
+        problemCreateMessage.enableHtml(true);
+
+        botExecutionsService.sendMessage(problemCreateMessage);
+    }
+
+    public void editToProblemQuestion(CallbackQuery callbackQuery) {
+        var problemCreateMessage = EditMessageText.builder()
+                .chatId(callbackQuery.getMessage().getChatId())
+                .messageId(callbackQuery.getMessage().getMessageId())
+                .text(PROBLEM_MESSAGE)
+                .replyMarkup(getProblemCategoriesKeyboard())
+                .build();
+        problemCreateMessage.enableHtml(true);
+
+        botExecutionsService.editMessage(problemCreateMessage);
+    }
+
+    public void editToComputerSubcategories(CallbackQuery callbackQuery) {
+        var computerSubcategories = EditMessageText.builder()
+                .chatId(callbackQuery.getMessage().getChatId())
+                .messageId(callbackQuery.getMessage().getMessageId())
+                .text(SUBCATEGORY_MESSAGE)
+                .replyMarkup(getComputerSubcategoriesKeyboard())
+                .build();
+        computerSubcategories.enableHtml(true);
+
+        botExecutionsService.editMessage(computerSubcategories);
     }
 
     public void sendProfile(long chatId, Client client) {
@@ -266,5 +297,18 @@ public class ClientUpdateHandler {
 
     public void handleUpdateClientAddress(Message message) {
         handleClientUpdate(message, Client::setAddress);
+    }
+
+    public void handleComputerIssue(long chatId, String subcategory) {
+        botExecutionsService.sendDefaultMessage(chatId, DESCRIBE_PROBLEM);
+        cacheManager.save(String.valueOf(chatId), new ChatStatus(ChatStatusType.PROBLEM_DESCRIPTION, List.of("Компьютер/Ноутбук", subcategory)));
+    }
+
+    public void handleDescription(Message message, ChatStatus chatStatus) {
+        long chatId = message.getChatId();
+        var problem = SendMessage.builder()
+                .chatId(chatId)
+                .text("")
+                .build();
     }
 }
