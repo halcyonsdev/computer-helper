@@ -8,6 +8,7 @@ import org.telegram.telegrambots.longpolling.interfaces.LongPollingUpdateConsume
 import org.telegram.telegrambots.longpolling.starter.SpringLongPollingBot;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 @Component
 @RequiredArgsConstructor
@@ -30,7 +31,13 @@ public class ComputerHelperBot implements SpringLongPollingBot, LongPollingSingl
     @Override
     public void consume(Update update) {
         if (update.hasMessage()) {
-            telegramUpdateHandler.handleMessage(update.getMessage());
+            Message message = update.getMessage();
+
+            if (message.hasText()) {
+                telegramUpdateHandler.handleMessage(update.getMessage());
+            } else if (message.hasPhoto()) {
+                telegramUpdateHandler.processStatus(message);
+            }
         } else if (update.hasCallbackQuery()) {
             telegramUpdateHandler.handleCallbackQuery(update.getCallbackQuery());
         }

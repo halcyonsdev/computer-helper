@@ -1,5 +1,6 @@
 package com.halcyon.computer.helper.util;
 
+import com.halcyon.computer.helper.entity.Problem;
 import com.halcyon.computer.helper.entity.Specialist;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
@@ -40,11 +41,21 @@ public class KeyboardUtil {
                 )).build();
     }
 
-    private static InlineKeyboardRow getClientStartMenuButtonRow() {
+    public static InlineKeyboardRow getClientStartMenuButtonRow() {
         return new InlineKeyboardRow(InlineKeyboardButton.builder()
                 .text("\uD83D\uDDC2️ Меню")
                 .callbackData("client_start")
                 .build());
+    }
+
+    public static InlineKeyboardMarkup getClientToStartKeyboard() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDC2️ Меню")
+                                .callbackData("start_client_start")
+                                .build())
+                )).build();
     }
 
     public static InlineKeyboardMarkup getUpdateClientKeyboard() {
@@ -80,6 +91,10 @@ public class KeyboardUtil {
                         new InlineKeyboardRow(InlineKeyboardButton.builder()
                                 .text("\uD83D\uDC64 Профиль")
                                 .callbackData("client_profile")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("❓ Мои проблемы")
+                                .callbackData("my_problems_0")
                                 .build())
                 )).build();
     }
@@ -186,5 +201,91 @@ public class KeyboardUtil {
                                 .build()),
                         getClientStartMenuButtonRow()
                 )).build();
+    }
+
+    public static InlineKeyboardMarkup getSoftwareSubcategoriesKeyboard() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDCBD Помощь с установкой программ")
+                                .callbackData("software_download")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83E\uDDA0 Проверить/почистить от вирусов")
+                                .callbackData("software_virus")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDA5️ Не запускается/вылетает программа")
+                                .callbackData("software_crashes")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83E\uDE9F Установка/переустановка ОС")
+                                .callbackData("software_oc")
+                                .build()),
+                        getClientStartMenuButtonRow()
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getPeripheralSubcategoriesKeyboard() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDA8️ Подключить/настроить принтер")
+                                .callbackData("peripheral_printer")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDB1️ Клавиатура/мышь не работает")
+                                .callbackData("peripheral_keyboard")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDA5️ Проблема с монитором")
+                                .callbackData("peripheral_screen")
+                                .build()),
+                        getClientStartMenuButtonRow()
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getProblemMenuKeyboard() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDBC Прикрепить фото")
+                                .callbackData("set_image")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("⬆️ Отправить")
+                                .callbackData("send")
+                                .build())
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getMyProblemsKeyboard(List<Problem> problems, int el) {
+        List<InlineKeyboardRow> keyboard = new ArrayList<>();
+
+        for (int i = el; i < Math.min(problems.size(), el + 5); i++) {
+            Problem problem = problems.get(i);
+
+            var problemButton = InlineKeyboardButton.builder()
+                    .text(problem.getCategory())
+                    .callbackData("my_problem_" + problem.getId())
+                    .build();
+
+            keyboard.add(new InlineKeyboardRow(problemButton));
+        }
+
+        var leftButton = InlineKeyboardButton.builder()
+                .text("◀️")
+                .callbackData("my_problems_" + (Math.max(el - 5, 0)))
+                .build();
+
+        var rightButton = InlineKeyboardButton.builder()
+                .text("▶️")
+                .callbackData("my_problems_" + (el + 5 >= problems.size() ? 0 : el + 5))
+                .build();
+
+        keyboard.add(new InlineKeyboardRow(leftButton, rightButton));
+        keyboard.add(getClientStartMenuButtonRow());
+
+        return new InlineKeyboardMarkup(keyboard);
     }
 }

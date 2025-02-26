@@ -4,16 +4,24 @@ import com.halcyon.computer.helper.cache.CacheManager;
 import com.halcyon.computer.helper.cache.ChatStatus;
 import com.halcyon.computer.helper.cache.ChatStatusType;
 import com.halcyon.computer.helper.entity.Client;
+import com.halcyon.computer.helper.entity.Problem;
 import com.halcyon.computer.helper.service.BotExecutionsService;
 import com.halcyon.computer.helper.service.ClientService;
+import com.halcyon.computer.helper.service.ProblemService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
+import org.telegram.telegrambots.meta.api.objects.PhotoSize;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.BiConsumer;
 
 import static com.halcyon.computer.helper.bot.BotResponse.*;
@@ -26,6 +34,7 @@ public class ClientUpdateHandler {
     private final BotExecutionsService botExecutionsService;
     private final CacheManager cacheManager;
     private final ClientService clientService;
+    private final ProblemService problemService;
 
     public void sendStartMessage(long chatId) {
         if (clientService.existsByChatId(chatId)) {
@@ -166,16 +175,16 @@ public class ClientUpdateHandler {
         botExecutionsService.editMessage(problemCreateMessage);
     }
 
-    public void editToComputerSubcategories(CallbackQuery callbackQuery) {
-        var computerSubcategories = EditMessageText.builder()
+    public void editToSubcategories(CallbackQuery callbackQuery, InlineKeyboardMarkup keyboardMarkup) {
+        var subcategories = EditMessageText.builder()
                 .chatId(callbackQuery.getMessage().getChatId())
                 .messageId(callbackQuery.getMessage().getMessageId())
                 .text(SUBCATEGORY_MESSAGE)
-                .replyMarkup(getComputerSubcategoriesKeyboard())
+                .replyMarkup(keyboardMarkup)
                 .build();
-        computerSubcategories.enableHtml(true);
+        subcategories.enableHtml(true);
 
-        botExecutionsService.editMessage(computerSubcategories);
+        botExecutionsService.editMessage(subcategories);
     }
 
     public void sendProfile(long chatId, Client client) {
@@ -299,16 +308,176 @@ public class ClientUpdateHandler {
         handleClientUpdate(message, Client::setAddress);
     }
 
-    public void handleComputerIssue(long chatId, String subcategory) {
+    public void handleIssue(long chatId, String category, String subcategory) {
         botExecutionsService.sendDefaultMessage(chatId, DESCRIBE_PROBLEM);
-        cacheManager.save(String.valueOf(chatId), new ChatStatus(ChatStatusType.PROBLEM_DESCRIPTION, List.of("Компьютер/Ноутбук", subcategory)));
+        cacheManager.save(String.valueOf(chatId), new ChatStatus(ChatStatusType.PROBLEM_DESCRIPTION, List.of(category, subcategory)));
     }
 
     public void handleDescription(Message message, ChatStatus chatStatus) {
         long chatId = message.getChatId();
-        var problem = SendMessage.builder()
-                .chatId(chatId)
-                .text("")
+
+        Problem problem = Problem.builder()
+                .category(chatStatus.getData().get(0))
+                .subcategory(chatStatus.getData().get(1))
+                .description(message.getText())
+                .status("Создается")
                 .build();
+
+        cacheManager.save("problem:" + chatId, problem);
+        sendProblemMessage(chatId, problem);
+
+        cacheManager.remove(String.valueOf(chatId));
+    }
+
+    private void sendProblemMessage(long chatId, Problem problem) {
+        if (problem.getFileId() != null) {
+            var problemMessage = SendPhoto.builder()
+                    .chatId(chatId)
+                    .photo(new InputFile(problem.getFileId()))
+                    .caption(getProblemInfo(problem))
+                    .replyMarkup(getProblemMenuKeyboard())
+                    .parseMode("HTML")
+                    .build();
+
+            botExecutionsService.sendPhoto(problemMessage);
+            return;
+        }
+
+        var problemMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(getProblemInfo(problem))
+                .replyMarkup(getProblemMenuKeyboard())
+                .build();
+        problemMessage.enableHtml(true);
+
+        botExecutionsService.sendMessage(problemMessage);
+    }
+
+    private void editToProblemMessage(CallbackQuery callbackQuery, Problem problem) {
+        long chatId = callbackQuery.getMessage().getChatId();
+
+        if (problem.getFileId() != null) {
+            var problemMessage = SendPhoto.builder()
+                    .chatId(chatId)
+                    .photo(new InputFile(problem.getFileId()))
+                    .caption(getProblemInfo(problem))
+                    .replyMarkup(getProblemMenuKeyboard())
+                    .parseMode("HTML")
+                    .build();
+
+            botExecutionsService.sendPhoto(problemMessage);
+            return;
+        }
+
+        var problemMessage = EditMessageText.builder()
+                .chatId(chatId)
+                .messageId(callbackQuery.getMessage().getMessageId())
+                .text(getProblemInfo(problem))
+                .replyMarkup(getProblemMenuKeyboard())
+                .build();
+        problemMessage.enableHtml(true);
+
+        botExecutionsService.editMessage(problemMessage);
+    }
+
+    private String getProblemInfo(Problem problem) {
+        return String.format(
+                PROBLEM_INFO,
+                problem.getCategory(),
+                problem.getSubcategory(),
+                problem.getDescription(),
+                problem.getStatus()
+        );
+    }
+
+    public void handleSettingImage(long chatId) {
+        botExecutionsService.sendDefaultMessage(chatId, SEND_IMAGE_MESSAGE);
+        cacheManager.save(String.valueOf(chatId), new ChatStatus(ChatStatusType.PROBLEM_IMAGE));
+    }
+
+    public void handleImage(Message message) {
+        long chatId = message.getChatId();
+
+        String fileId = message.getPhoto().stream()
+                .max(Comparator.comparing(PhotoSize::getFileSize))
+                .map(PhotoSize::getFileId)
+                .orElse(null);
+
+        Optional<Problem> problemOptional = cacheManager.fetch("problem:" + chatId, Problem.class);
+
+        if (fileId == null || problemOptional.isEmpty()) {
+            botExecutionsService.sendDefaultMessage(chatId, "Не удалось получить фото.");
+            return;
+        }
+
+        Problem problem = problemOptional.get();
+        problem.setFileId(fileId);
+
+        cacheManager.save("problem:" + chatId, problem);
+        sendProblemMessage(chatId, problem);
+
+        cacheManager.remove(String.valueOf(chatId));
+    }
+
+    public void handleSendingProblem(CallbackQuery callbackQuery) {
+        long chatId = callbackQuery.getMessage().getChatId();
+        Optional<Problem> problemOptional = cacheManager.fetch("problem:" + chatId, Problem.class);
+
+        if (problemOptional.isEmpty()) {
+            botExecutionsService.sendDefaultErrorMessage(chatId);
+            return;
+        }
+
+        Problem problem = problemOptional.get();
+        problem.setStatus("В обработке");
+        problem = problemService.save(problem, chatId);
+
+        cacheManager.remove("problem:" + chatId);
+        editToProblemMessage(callbackQuery, problem);
+        sendStartMessage(chatId);
+    }
+
+    public void editToMyProblems(CallbackQuery callbackQuery) {
+        long chatId = callbackQuery.getMessage().getChatId();
+        List<Problem> clientProblems = problemService.getClientProblems(chatId);
+        int el = Integer.parseInt(callbackQuery.getData().split("_")[2]);
+
+        var problems = EditMessageText.builder()
+                .chatId(chatId)
+                .messageId(callbackQuery.getMessage().getMessageId())
+                .text(MY_PROBLEMS_MESSAGE)
+                .replyMarkup(getMyProblemsKeyboard(clientProblems, el))
+                .build();
+        problems.enableMarkdown(true);
+
+        botExecutionsService.editMessage(problems);
+    }
+
+    public void sendProblem(CallbackQuery callbackQuery) {
+        long chatId = callbackQuery.getMessage().getChatId();
+        long problemId = Long.parseLong(callbackQuery.getData().split("_")[2]);
+        Problem problem = problemService.findById(problemId);
+
+        if (problem.getFileId() != null) {
+            var problemMessage = SendPhoto.builder()
+                    .chatId(chatId)
+                    .photo(new InputFile(problem.getFileId()))
+                    .caption(getProblemInfo(problem))
+                    .replyMarkup(getClientToStartKeyboard())
+                    .parseMode("HTML")
+                    .build();
+
+            botExecutionsService.sendPhoto(problemMessage);
+            return;
+        }
+
+        var problemMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(getProblemInfo(problem))
+                .replyMarkup(getClientToStartKeyboard())
+                .build();
+        problemMessage.enableHtml(true);
+
+        botExecutionsService.sendMessage(problemMessage);
     }
 }

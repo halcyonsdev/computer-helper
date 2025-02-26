@@ -56,5 +56,9 @@ public class BotResponse {
             <u>Категория</u>: %s
             <u>Подкатегория</u>: %s
             <u>Описание</u>: %s
+            <u>Статус</u>: %s
             """;
+
+    public static final String SEND_IMAGE_MESSAGE = "Отправьте фотографию с демонстрацией вашей проблемы";
+    public static final String MY_PROBLEMS_MESSAGE = "*Мои проблемы*";
 }

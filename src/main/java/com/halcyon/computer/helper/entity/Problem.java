@@ -1,13 +1,11 @@
 package com.halcyon.computer.helper.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Table(name = "problems")
+@Builder
 @Getter
 @Setter
 @NoArgsConstructor
@@ -30,10 +28,10 @@ public class Problem {
     @Column(name = "status", nullable = false)
     private String status;
 
-    @Column(name = "image_url")
-    private String imageUrl;
+    @Column(name = "file_id")
+    private String fileId;
 
     @ManyToOne
-    @JoinColumn(name = "client_id", referencedColumnName = "id")
+    @JoinColumn(name = "client_chat_id", referencedColumnName = "chat_id")
     private Client client;
 }

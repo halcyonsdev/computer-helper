@@ -11,6 +11,8 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 import java.util.List;
 import java.util.Optional;
 
+import static com.halcyon.computer.helper.util.KeyboardUtil.*;
+
 @Component
 @RequiredArgsConstructor
 public class TelegramUpdateHandler {
@@ -60,6 +62,9 @@ public class TelegramUpdateHandler {
             case SPECIALIST_FULL_NAME -> specialistUpdateHandler.handleCreateFullName(message);
             case SPECIALIST_PHONE -> specialistUpdateHandler.handleCreatePhone(message, chatStatus);
             case SPECIALIST_EMAIL -> specialistUpdateHandler.handleCreateEmail(message, chatStatus);
+
+            case PROBLEM_DESCRIPTION -> clientUpdateHandler.handleDescription(message, chatStatus);
+            case PROBLEM_IMAGE -> clientUpdateHandler.handleImage(message);
         }
     }
 
@@ -73,6 +78,7 @@ public class TelegramUpdateHandler {
             case "client_profile" -> clientUpdateHandler.editProfile(callbackQuery);
             case "client_problem" -> clientUpdateHandler.editToProblemQuestion(callbackQuery);
             case "client_start" -> clientUpdateHandler.editToClientStartMenu(callbackQuery);
+            case "start_client_start" -> clientUpdateHandler.sendStartMessage(chatId);
             case "update_client_name" -> clientUpdateHandler.sendUpdateClientFullName(chatId);
             case "update_client_phone" -> clientUpdateHandler.sendUpdateClientPhone(chatId);
             case "update_client_email" -> clientUpdateHandler.sendUpdateClientEmail(chatId);
@@ -85,10 +91,26 @@ public class TelegramUpdateHandler {
             case "admin_start" -> adminUpdateHandler.editToStartMessage(callbackQuery);
             case "requests" -> adminUpdateHandler.editToSpecialistsRequests(callbackQuery);
 
-            case "computer" -> clientUpdateHandler.editToComputerSubcategories(callbackQuery);
-            case "pc_turn" -> clientUpdateHandler.handleComputerIssue(chatId, "Не включается");
-            case "pc_slow" -> clientUpdateHandler.handleComputerIssue(chatId, "Медленно работает");
-            case "pc_hangs" -> clientUpdateHandler.handleComputerIssue(chatId, "Зависает");
+            case "computer" -> clientUpdateHandler.editToSubcategories(callbackQuery, getComputerSubcategoriesKeyboard());
+            case "pc_turn" -> clientUpdateHandler.handleIssue(chatId, "Компьютер/Ноутбук", "Не включается");
+            case "pc_slow" -> clientUpdateHandler.handleIssue(chatId, "Компьютер/Ноутбук", "Медленно работает");
+            case "pc_hangs" -> clientUpdateHandler.handleIssue(chatId, "Компьютер/Ноутбук", "Зависает");
+
+            case "software" -> clientUpdateHandler.editToSubcategories(callbackQuery, getSoftwareSubcategoriesKeyboard());
+            case "software_download" -> clientUpdateHandler.handleIssue(chatId, "Программное обеспечение", "Помощь с установкой программ");
+            case "software_virus" -> clientUpdateHandler.handleIssue(chatId, "Программное обеспечение",  "Проверить/почистить от вирусов");
+            case "software_crashes" -> clientUpdateHandler.handleIssue(chatId, "Программное обеспечение",  "Не запускается/вылетает программа");
+            case "software_oc" -> clientUpdateHandler.handleIssue(chatId, "Программное обеспечение", "Установка/переустановка ОС");
+
+            case "peripheral" -> clientUpdateHandler.editToSubcategories(callbackQuery, getPeripheralSubcategoriesKeyboard());
+            case "peripheral_printer" -> clientUpdateHandler.handleIssue(chatId, "Переферийные устройства", "Подключить/настроить принтер");
+            case "peripheral_keyboard" -> clientUpdateHandler.handleIssue(chatId, "Переферийные устройства", "Клавиатура/мышь не работает");
+            case "peripheral_screen" -> clientUpdateHandler.handleIssue(chatId, "Переферийные устройства", "Проблема с монитором");
+
+            case "consultation" -> clientUpdateHandler.handleIssue(chatId, "Необходима консультация", "Консультация");
+
+            case "set_image" -> clientUpdateHandler.handleSettingImage(chatId);
+            case "send" -> clientUpdateHandler.handleSendingProblem(callbackQuery);
 
             default -> {
                 if (callbackData.startsWith("request_")) {
@@ -97,6 +119,10 @@ public class TelegramUpdateHandler {
                     adminUpdateHandler.acceptSpecialistRequest(callbackQuery);
                 } else if (callbackData.startsWith("decline_")) {
                     adminUpdateHandler.declineSpecialistRequest(callbackQuery);
+                } else if (callbackData.startsWith("my_problems_")) {
+                    clientUpdateHandler.editToMyProblems(callbackQuery);
+                } else if (callbackData.startsWith("my_problem_")) {
+                    clientUpdateHandler.sendProblem(callbackQuery);
                 }
             }
         }
