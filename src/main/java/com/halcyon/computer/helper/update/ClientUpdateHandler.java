@@ -446,7 +446,7 @@ public class ClientUpdateHandler {
                 .chatId(chatId)
                 .messageId(callbackQuery.getMessage().getMessageId())
                 .text(MY_PROBLEMS_MESSAGE)
-                .replyMarkup(getMyProblemsKeyboard(clientProblems, el))
+                .replyMarkup(getProblemsKeyboard(clientProblems, el, "my_problems_", "my_problem"))
                 .build();
         problems.enableMarkdown(true);
 

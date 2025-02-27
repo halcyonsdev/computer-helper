@@ -34,4 +34,11 @@ public class Problem {
     @ManyToOne
     @JoinColumn(name = "client_chat_id", referencedColumnName = "chat_id")
     private Client client;
+
+    @ManyToOne
+    @JoinColumn(name = "specialist_chat_id", referencedColumnName = "chat_id")
+    private Specialist specialist;
+
+    @OneToOne(mappedBy = "problem")
+    private Countdown countdown;
 }

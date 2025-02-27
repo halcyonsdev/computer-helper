@@ -26,6 +26,10 @@ public class SpecialistService {
         return specialistRepository.findAllByIsRequest(true);
     }
 
+    public List<Specialist> getSpecialists() {
+        return specialistRepository.findAllByIsRequest(false);
+    }
+
     public Specialist findByChatId(Long chatId) {
         return specialistRepository.findByChatId(chatId)
                 .orElseThrow(() -> new ResourceNotFoundException("Specialist with chat_id " + chatId + " not found"));

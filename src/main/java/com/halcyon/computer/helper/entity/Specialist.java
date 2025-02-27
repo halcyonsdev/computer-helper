@@ -3,6 +3,8 @@ package com.halcyon.computer.helper.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.List;
+
 @Entity
 @Table(name = "specialists")
 @Builder
@@ -30,4 +32,7 @@ public class Specialist {
 
     @Column(name = "is_request", nullable = false)
     private Boolean isRequest;
+
+    @OneToMany(mappedBy = "specialist")
+    private List<Problem> problems;
 }

@@ -3,14 +3,20 @@ package com.halcyon.computer.helper.update;
 import com.halcyon.computer.helper.cache.CacheManager;
 import com.halcyon.computer.helper.cache.ChatStatus;
 import com.halcyon.computer.helper.cache.ChatStatusType;
+import com.halcyon.computer.helper.entity.Client;
+import com.halcyon.computer.helper.entity.Countdown;
+import com.halcyon.computer.helper.entity.Problem;
 import com.halcyon.computer.helper.entity.Specialist;
 import com.halcyon.computer.helper.service.BotExecutionsService;
+import com.halcyon.computer.helper.service.ProblemService;
 import com.halcyon.computer.helper.service.SpecialistService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.telegram.telegrambots.meta.api.methods.send.SendPhoto;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
+import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 import java.util.List;
@@ -26,6 +32,7 @@ public class SpecialistUpdateHandler {
     private final BotExecutionsService botExecutionsService;
     private final CacheManager cacheManager;
     private final SpecialistService specialistService;
+    private final ProblemService problemService;
 
     public void editToStartMenu(CallbackQuery callbackQuery) {
         long chatId = callbackQuery.getMessage().getChatId();
@@ -107,5 +114,57 @@ public class SpecialistUpdateHandler {
                 specialist.getPhone(),
                 specialist.getEmail()
         );
+    }
+
+    public void handleAddingCountdown(CallbackQuery callbackQuery) {
+        long chatId = callbackQuery.getMessage().getChatId();
+
+        botExecutionsService.sendDefaultMessage(chatId, ADD_COUNTDOWN_MESSAGE);
+        cacheManager.save(String.valueOf(chatId), new ChatStatus(ChatStatusType.COUNTDOWN_CONTENT));
+    }
+
+    public void handleCountdownContent(Message message, ChatStatus chatStatus) {
+        long chatId = message.getChatId();
+        long problemId = Long.parseLong(chatStatus.getData().get(0));
+
+        Problem problem = problemService.findById(problemId);
+
+        var countdown = Countdown.builder()
+                .content(message.getText())
+                .problem(problem)
+                .build();
+
+        cacheManager.save("countdown:" + problem, countdown);
+        sendCreateCountdown(countdown, chatId);
+    }
+
+    private void sendCreateCountdown(Countdown countdown, long chatId) {
+        long problemId = countdown.getProblem().getId();
+
+        if (countdown.getFileId() != null) {
+            var countdownMessage = SendPhoto.builder()
+                    .chatId(chatId)
+                    .photo(new InputFile(countdown.getFileId()))
+                    .caption(String.format(CREATE_COUNTDOWN_MESSAGE, countdown.getContent()))
+                    .parseMode("HTML")
+                    .replyMarkup(getSpecialistCountdownKeyboard(problemId))
+                    .build();
+
+            botExecutionsService.sendPhoto(countdownMessage);
+            return;
+        }
+
+        var countdownMessage = SendMessage.builder()
+                .chatId(chatId)
+                .text(String.format(CREATE_COUNTDOWN_MESSAGE, countdown.getContent()))
+                .replyMarkup(getSpecialistCountdownKeyboard(problemId))
+                .build();
+        countdownMessage.enableHtml(true);
+
+        botExecutionsService.sendMessage(countdownMessage);
+    }
+
+    public void handleUpdatingCountdownContent() {
+
     }
 }

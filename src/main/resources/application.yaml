@@ -4,20 +4,20 @@ spring:
 
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: ${POSTGRES_URL}
-    username: ${POSTGRES_USERNAME}
-    password: ${POSTGRES_PASSWORD}
+    url: ${POSTGRES_URL:jdbc:postgresql://localhost:5432/computer_helper}
+    username: ${POSTGRES_USERNAME:postgres}
+    password: ${POSTGRES_PASSWORD:password}
 
   data:
     redis:
-      host: ${REDIS_HOST}
-      port: ${REDIS_PORT}
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
   jpa:
     hibernate:
       ddl-auto: none
-
+git add .
 bot:
-  token: ${BOT_TOKEN}
+  token: ${BOT_TOKEN:7314339886:AAGekycYZXqCLSqQse-xJL8bCFDUqkE_Cfw}
   admin:
-    ids: ${BOT_ADMIN_IDS}
+    ids: ${BOT_ADMIN_IDS:5543558749}

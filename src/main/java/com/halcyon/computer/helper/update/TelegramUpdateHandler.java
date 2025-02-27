@@ -65,6 +65,8 @@ public class TelegramUpdateHandler {
 
             case PROBLEM_DESCRIPTION -> clientUpdateHandler.handleDescription(message, chatStatus);
             case PROBLEM_IMAGE -> clientUpdateHandler.handleImage(message);
+
+            case COUNTDOWN_CONTENT -> specialistUpdateHandler.handleCountdownContent(message, chatStatus);
         }
     }
 
@@ -112,6 +114,8 @@ public class TelegramUpdateHandler {
             case "set_image" -> clientUpdateHandler.handleSettingImage(chatId);
             case "send" -> clientUpdateHandler.handleSendingProblem(callbackQuery);
 
+            case "clients_problems" -> adminUpdateHandler.editToClientsProblems(callbackQuery);
+
             default -> {
                 if (callbackData.startsWith("request_")) {
                     adminUpdateHandler.editToSpecialistRequestMenu(callbackQuery);
@@ -123,6 +127,26 @@ public class TelegramUpdateHandler {
                     clientUpdateHandler.editToMyProblems(callbackQuery);
                 } else if (callbackData.startsWith("my_problem_")) {
                     clientUpdateHandler.sendProblem(callbackQuery);
+                } else if (callbackData.startsWith("processing_problems_")) {
+                    adminUpdateHandler.editToProcessingProblems(callbackQuery);
+                } else if (callbackData.startsWith("work_problems_")) {
+                    adminUpdateHandler.editToWorkProblems(callbackQuery);
+                } else if (callbackData.startsWith("finished_problems_")) {
+                    adminUpdateHandler.editToFinishedProblems(callbackQuery);
+                } else if (callbackData.startsWith("processing_problem_")) {
+                    adminUpdateHandler.sendProcessingProblem(callbackQuery);
+                } else if (callbackData.startsWith("set_specialist_")) {
+                    adminUpdateHandler.sendChoosingSpecialist(callbackQuery);
+                } else if (callbackData.startsWith("problem_specialist_")) {
+                    adminUpdateHandler.handleChoosingSpecialist(callbackQuery);
+                } else if (callbackData.startsWith("get_problem_")) {
+                    clientUpdateHandler.sendProblem(callbackQuery);
+                } else if (callbackData.startsWith("work_problem_")) {
+                    adminUpdateHandler.sendInWorkProblem(callbackQuery);
+                } else if (callbackData.startsWith("finished_problem_")) {
+                    adminUpdateHandler.sendFinishedProblem(callbackQuery);
+                } else if (callbackData.startsWith("countdown_")) {
+                    specialistUpdateHandler.handleAddingCountdown(callbackQuery);
                 }
             }
         }

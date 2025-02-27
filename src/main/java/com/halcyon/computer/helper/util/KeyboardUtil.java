@@ -51,11 +51,14 @@ public class KeyboardUtil {
     public static InlineKeyboardMarkup getClientToStartKeyboard() {
         return InlineKeyboardMarkup.builder()
                 .keyboard(List.of(
-                        new InlineKeyboardRow(InlineKeyboardButton.builder()
-                                .text("\uD83D\uDDC2️ Меню")
-                                .callbackData("start_client_start")
-                                .build())
-                )).build();
+                        getClientToStartRow())).build();
+    }
+
+    private static InlineKeyboardRow getClientToStartRow() {
+        return new InlineKeyboardRow(InlineKeyboardButton.builder()
+                .text("\uD83D\uDDC2️ Меню")
+                .callbackData("start_client_start")
+                .build());
     }
 
     public static InlineKeyboardMarkup getUpdateClientKeyboard() {
@@ -118,17 +121,40 @@ public class KeyboardUtil {
                         new InlineKeyboardRow(InlineKeyboardButton.builder()
                                 .text("\uD83D\uDCC4 Заявки")
                                 .callbackData("requests")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83C\uDD98 Проблемы")
+                                .callbackData("clients_problems")
                                 .build())
                 )).build();
     }
 
-    public static InlineKeyboardMarkup getSpecialistsRequestsKeyboard(List<Specialist> specialistRequests) {
+    public static InlineKeyboardMarkup getClientProblemsKeyboard() {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDD04 В обработке")
+                                .callbackData("processing_problems_0")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDEE0 В работе")
+                                .callbackData("work_problems_0")
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("✅ Завершено")
+                                .callbackData("finished_problems_0")
+                                .build()),
+                        getAdminMenuButtonRow()
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getSpecialistsRequestsKeyboard(List<Specialist> specialistRequests, String callbackData) {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
 
         for (var specialistRequest : specialistRequests) {
             var specialistRequestButton = InlineKeyboardButton.builder()
                     .text(specialistRequest.getFullName())
-                    .callbackData("request_" + specialistRequest.getChatId())
+                    .callbackData(callbackData + specialistRequest.getChatId())
                     .build();
 
             keyboard.add(new InlineKeyboardRow(specialistRequestButton));
@@ -259,15 +285,17 @@ public class KeyboardUtil {
                 )).build();
     }
 
-    public static InlineKeyboardMarkup getMyProblemsKeyboard(List<Problem> problems, int el) {
+    public static InlineKeyboardMarkup getProblemsKeyboard(List<Problem> problems, int el, String problemsData, String problemData) {
         List<InlineKeyboardRow> keyboard = new ArrayList<>();
+
+        boolean isClient = problemData.equals("my_problems_");
 
         for (int i = el; i < Math.min(problems.size(), el + 5); i++) {
             Problem problem = problems.get(i);
 
             var problemButton = InlineKeyboardButton.builder()
                     .text(problem.getCategory())
-                    .callbackData("my_problem_" + problem.getId())
+                    .callbackData(problemData + problem.getId())
                     .build();
 
             keyboard.add(new InlineKeyboardRow(problemButton));
@@ -275,17 +303,90 @@ public class KeyboardUtil {
 
         var leftButton = InlineKeyboardButton.builder()
                 .text("◀️")
-                .callbackData("my_problems_" + (Math.max(el - 5, 0)))
+                .callbackData(problemsData + (Math.max(el - 5, 0)))
                 .build();
 
         var rightButton = InlineKeyboardButton.builder()
                 .text("▶️")
-                .callbackData("my_problems_" + (el + 5 >= problems.size() ? 0 : el + 5))
+                .callbackData(problemsData + (el + 5 >= problems.size() ? 0 : el + 5))
                 .build();
 
         keyboard.add(new InlineKeyboardRow(leftButton, rightButton));
-        keyboard.add(getClientStartMenuButtonRow());
+        keyboard.add(isClient ? getClientStartMenuButtonRow() : getAdminMenuButtonRow());
 
         return new InlineKeyboardMarkup(keyboard);
+    }
+
+    public static InlineKeyboardMarkup getProcessingProblemKeyboard(long problemId) {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDC68\u200D\uD83D\uDCBC Назначить специалиста")
+                                .callbackData("set_specialist_" + problemId)
+                                .build()),
+                        getAdminMenuButtonRow()
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getProblemClientNotificationKeyboard(long problemId) {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(getProblemButtonRow(problemId))).build();
+    }
+
+    private static InlineKeyboardRow getProblemButtonRow(long problemId) {
+        return new InlineKeyboardRow(InlineKeyboardButton.builder()
+                .text("Проблема")
+                .callbackData("get_problem_" + problemId)
+                .build());
+    }
+
+    public static InlineKeyboardMarkup getProblemSpecialistNotificationKeyboard(long problemId) {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        getProblemButtonRow(problemId),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("✅ Завершить и составить отсчет")
+                                .callbackData("countdown_" + problemId)
+                                .build())
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getFinishedProblemKeyboard(long problemId) {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("⭐️ Отзыв")
+                                .callbackData("review_" + problemId)
+                                .build())
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getClientClosedProblemKeyboard(long problemId) {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("⭐️ Оставить отзыв")
+                                .callbackData("add_review_" + problemId)
+                                .build()),
+                        getClientToStartRow()
+                )).build();
+    }
+
+    public static InlineKeyboardMarkup getSpecialistCountdownKeyboard(long problemId) {
+        return InlineKeyboardMarkup.builder()
+                .keyboard(List.of(
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("✍️ Изменить описание")
+                                .callbackData("cd_content_" + problemId)
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("\uD83D\uDDBC Прикрепить фото")
+                                .callbackData("cd_image_" + problemId)
+                                .build()),
+                        new InlineKeyboardRow(InlineKeyboardButton.builder()
+                                .text("⬆️ Отправить")
+                                .callbackData("cd_send_" + problemId)
+                                .build())
+                )).build();
     }
 }

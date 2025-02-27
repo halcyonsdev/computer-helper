@@ -61,4 +61,64 @@ public class BotResponse {
 
     public static final String SEND_IMAGE_MESSAGE = "Отправьте фотографию с демонстрацией вашей проблемы";
     public static final String MY_PROBLEMS_MESSAGE = "*Мои проблемы*";
+    public static final String CLIENTS_PROBLEMS_MESSAGE = "*Проблемы клиентов*";
+    public static final String PROCESSING_PROBLEMS_MESSAGE = "*Проблемы, ожидающие обработки*";
+    public static final String WORK_PROBLEMS_MESSAGE = "*Проблемы, которые решаются на данный момент*";
+    public static final String FINISHED_PROBLEMS_MESSAGE = "*Проблемы, которые были решены*";
+    public static final String CHOOSE_SPECIALIST_MESSAGE = "*Какого специалиста вы хотите назначить на эту проблему?*";
+    public static final String CLIENT_SPECIALIST_MESSAGE = """
+            <b>К вам приедет специалист:</b>
+            
+            <u>ФИО</u>: %s
+            <u>Телефон</u>: %s
+            <u>Email</u>: %s
+            """;
+
+    public static final String SPECIALIST_PROBLEM_MESSAGE = """
+            <b>Вам назначена проблема от:</b>
+            
+            <u>ФИО</u>: %s
+            <u>Телефон</u>: %s
+            <u>Email</u>: %s
+            <u>Адрес для выезда</u>: %s
+            """;
+
+    public static final String IN_WORK_FINISHED_PROBLEM_MESSAGE = """
+            Информация о проблеме:
+            
+            <u>Категория</u>: %s
+            <u>Подкатегория</u>: %s
+            <u>Описание</u>: %s
+            <u>Статус</u>: %s
+            
+            <b>Специалист:</b>
+            
+            <u>ФИО</u>: %s
+            <u>Телефон</u>: %s
+            <u>Email</u>: %s
+            """;
+
+    public static final String SPECIALIST_CLOSED_PROBLEM_MESSAGE = "*Проблема закрыта.*";
+    public static final String CLIENT_CLOSED_PROBLEM_MESSAGE = """
+            <b>Проблема закрыта:</b>
+            
+            <u>Категория</u>: %s
+            <u>Подкатегория</u>: %s
+            <u>Описание</u>: %s
+            <u>Статус</u>: %s
+            
+            <b>Специалист:</b>
+            
+            <u>ФИО</u>: %s
+            <u>Телефон</u>: %s
+            <u>Email</u>: %s
+            """;
+
+    public static final String ADD_COUNTDOWN_MESSAGE = "Напишите <u>отсчет</u> по выполненной работе:";
+    public static final String ADD_REVIEW_MESSAGE = "Поделитесь вашими впечатлениями от работы специалиста:";
+    public static final String CREATE_COUNTDOWN_MESSAGE = """
+            <u>Отсчет</u>:
+            
+            %s
+            """;
 }

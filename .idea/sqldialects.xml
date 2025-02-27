@@ -2,7 +2,9 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/src/main/resources/db/changelog/changeset/v1_create_clients_table.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/changelog/changeset/v1_create_countdowns_table.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/db/changelog/changeset/v1_create_problems_table.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/resources/db/changelog/changeset/v1_create_review_table.sql" dialect="PostgreSQL" />
     <file url="file://$PROJECT_DIR$/src/main/resources/db/changelog/changeset/v1_create_specialists_table.sql" dialect="PostgreSQL" />
   </component>
 </project>
